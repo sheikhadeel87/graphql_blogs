@@ -1,0 +1,38 @@
+# Dependencies
+node_modules/
+client/node_modules/
+server/node_modules/
+
+# Environment and secrets
+.env
+.env.local
+.env.*.local
+server/.env
+
+# Build and cache
+client/dist/
+client/node_modules/.vite/
+
+# Uploads (user content, recreated at runtime)
+server/uploads/
+
+# OS and editor
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+.idea/
+.vscode/
+
+# Cache
+.vite/
+
+# Build
+client/dist/
+server/dist/
+
+# Logs
+*.log
+npm-debug.log*
+yarn-error.log*
+yarn-error.log*
