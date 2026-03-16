@@ -1,7 +1,7 @@
 import { useParams, Link } from 'react-router-dom'
 import { useQuery, useMutation } from '@apollo/client'
 import { GET_POST } from '../graphql/queries'
-import { CREATE_COMMENT, LIKE_POST, UNLIKE_POST } from '../graphql/mutations'
+import { CREATE_COMMENT, LIKE_POST, UNLIKE_POST, FOLLOW_USER, UNFOLLOW_USER } from '../graphql/mutations'
 import { useAuth } from '../context/AuthContext'
 import { useState, useRef, useEffect } from 'react'
 import { formatPostDate } from '../lib/dateUtils'
@@ -37,6 +37,14 @@ export default function Post() {
   const [unlikePost] = useMutation(UNLIKE_POST, {
     refetchQueries: [{ query: GET_POST, variables: { id } }],
   })
+  const [followUser] = useMutation(FOLLOW_USER, {
+    refetchQueries: [{ query: GET_POST, variables: { id } }],
+  })
+  const [unfollowUser] = useMutation(UNFOLLOW_USER, {
+    refetchQueries: [{ query: GET_POST, variables: { id } }],
+  })
+
+  const post = data?.post
 
   const handleSubmitComment = async (e) => {
     e.preventDefault()
@@ -62,6 +70,18 @@ export default function Post() {
     setCommentText((prev) => prev + emojiData.emoji)
   }
 
+  const authorId = post?.author?.id
+  const isOwnPost = authorId === user?.id
+  const isFollowing = post?.author?.followers?.some((f) => f.id === user?.id) ?? false
+  const handleFollow = () => {
+    if (!authorId || !isLoggedIn) return
+    followUser({ variables: { userId: authorId } }).catch(console.error)
+  }
+  const handleUnfollow = () => {
+    if (!authorId || !isLoggedIn) return
+    unfollowUser({ variables: { userId: authorId } }).catch(console.error)
+  }
+
   if (loading) {
     return (
       <div className="animate-pulse">
@@ -77,7 +97,7 @@ export default function Post() {
   }
 
   if (error) return <ErrorAlert message={error.message} />
-  if (!data?.post) {
+  if (!post) {
     return (
       <div className="card p-8 text-center">
         <p className="text-surface-500">Post not found.</p>
@@ -86,10 +106,8 @@ export default function Post() {
     )
   }
 
-  const post = data.post
-
   return (
-    <article className="animate-fade-in single-post-page" data-post-id={post.id}>
+    <article className="animate-fade-in single-post-page min-w-0 w-full max-w-full overflow-x-hidden" data-post-id={post.id}>
       <Link to="/" className="mb-6 inline-flex items-center text-sm font-medium text-surface-500 hover:text-accent-500">
         ← Back to posts
       </Link>
@@ -97,7 +115,21 @@ export default function Post() {
       <header className="mb-8">
         <h1 className="heading-display text-3xl text-surface-900 sm:text-4xl md:text-[2.5rem]">{post.title}</h1>
         <p className="mt-3 flex flex-wrap items-center gap-x-2 gap-y-1 text-surface-500">
-          <PostAuthor author={post.author} size="md" />
+          <PostAuthor author={post.author} size="md" linkToAuthor={isOwnPost || isFollowing} />
+          {isLoggedIn && post.author && !isOwnPost && (
+            <>
+              <span className="text-surface-300">·</span>
+              {isFollowing ? (
+                <button type="button" onClick={handleUnfollow} className="text-sm font-medium text-surface-600 hover:text-surface-900 underline">
+                  Unfollow
+                </button>
+              ) : (
+                <button type="button" onClick={handleFollow} className="text-sm font-medium text-accent-600 hover:text-accent-700 underline">
+                  Follow
+                </button>
+              )}
+            </>
+          )}
           {(post.publishedAt || post.createdAt) && (
             <>
               <span className="text-surface-300">·</span>
@@ -143,7 +175,8 @@ export default function Post() {
         {post.content}
       </div> */}
       <div
-        className="font-display max-w-none text-surface-700 leading-relaxed text-[15px] sm:text-[17px] prose prose-headings:font-display prose-p:my-2 prose-ul:my-2 prose-ol:my-2"
+        className="font-display w-full min-w-0 max-w-full overflow-x-hidden text-surface-700 leading-relaxed text-[15px] sm:text-[17px] prose prose-headings:font-display prose-p:my-2 prose-ul:my-2 prose-ol:my-2 break-words [&_*]:max-w-full [&_*]:break-words"
+        style={{ overflowWrap: 'break-word', wordBreak: 'break-word' }}
         dangerouslySetInnerHTML={{ __html: post.content || '' }}
       />
 

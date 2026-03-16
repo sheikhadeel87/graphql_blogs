@@ -5,6 +5,10 @@ type User {
   email: String!
   avatar: String
   posts: [Post]
+  followers: [User]
+  following: [User]
+  followersCount: Int!
+  followingCount: Int!
 }
 
 type AuthPayload {
@@ -40,6 +44,7 @@ type Comment {
 input PostFilterInput {
   title: String
   authorName: String
+  authorId: String
   tag: String
   status: String
   startDate: String
@@ -73,6 +78,8 @@ type Mutation {
   likePost(postId: ID!): Post
   unlikePost(postId: ID!): Post
   enhanceWithAI(text: String!): String
+  followUser(userId: ID!): User
+  unfollowUser(userId: ID!): User
 }
 
 scalar Upload

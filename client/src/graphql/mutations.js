@@ -118,5 +118,28 @@ export const ENHANCE_WITH_AI = gql`
   mutation EnhanceWithAI($text: String!) {
     enhanceWithAI(text: $text)
   }
+`
 
+export const FOLLOW_USER = gql`
+  mutation FollowUser($userId: ID!) {
+    followUser(userId: $userId) {
+      id
+      name
+      avatar
+      followers { id }
+      following { id }
+    }
+  }
+`
+
+export const UNFOLLOW_USER = gql`
+  mutation UnfollowUser($userId: ID!) {
+    unfollowUser(userId: $userId) {
+      id
+      name
+      avatar
+      followers { id }
+      following { id }
+    }
+  }
 `

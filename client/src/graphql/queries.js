@@ -16,7 +16,7 @@ export const GET_POSTS_PAGINATED = gql`
         createdAt
         likes
         likedBy { id name }
-        author { id name avatar }
+        author { id name avatar followers { id } }
         comments { id }
       }
       totalPosts
@@ -48,6 +48,7 @@ export const GET_POST = gql`
         name
         email
         avatar
+        followers { id }
       }
       comments {
         id
@@ -59,6 +60,17 @@ export const GET_POST = gql`
           avatar
         }
       }
+    }
+  }
+`
+
+export const GET_USER = gql`
+  query GetUser($id: ID!) {
+    user(id: $id) {
+      id
+      name
+      avatar
+      followers { id }
     }
   }
 `
@@ -83,6 +95,7 @@ export const GET_POST_BY_SLUG = gql`
         name
         email
         avatar
+        followers { id }
       }
       comments {
         id
