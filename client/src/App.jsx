@@ -2,6 +2,7 @@ import { Routes, Route } from 'react-router-dom'
 import Layout from './components/Layout'
 import Home from './pages/Home'
 import Post from './pages/Post'
+import AuthorPosts from './pages/AuthorPosts'
 import Login from './pages/Login'
 import Register from './pages/Register'
 import Dashboard from './pages/Dashboard'
@@ -11,6 +12,7 @@ export default function App() {
     <Layout>
       <Routes>
         <Route path="/post/:id" element={<Post />} />
+        <Route path="/author/:userId" element={<AuthorPosts />} />
         <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />

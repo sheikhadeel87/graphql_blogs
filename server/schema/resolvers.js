@@ -121,13 +121,15 @@ const resolvers = {
           
             }
           
+            // filter by author ID (single author's posts)
+            if (filter.authorId && isValidObjectId(filter.authorId)) {
+              query.author = new mongoose.Types.ObjectId(filter.authorId);
+            }
             // search by author name
-            if (filter.authorName) {
-          
+            else if (filter.authorName) {
               const users = await User.find({
                 name: { $regex: filter.authorName, $options: "i" }
               });
-          
               const userIds = users.map(u => u._id);
               query.author = { $in: userIds };
             }
@@ -318,7 +320,43 @@ const resolvers = {
           enhanceWithAI: async (_, { text }) => {
             return `AI enhanced text for testing: ${text}`;
           },
-        
+
+          followUser: async (_, { userId }, { req }) => {
+            const auth = getUserFromReq(req);
+            const currentUserId = auth.userId;
+            if (!isValidObjectId(userId)) throw new Error("Invalid user ID");
+            if (userId === currentUserId) throw new Error("Cannot follow yourself");
+            const currentUser = await User.findById(currentUserId);
+            const targetUser = await User.findById(userId);
+            if (!currentUser) throw new Error("Current user not found");
+            if (!targetUser) throw new Error("User to follow not found");
+            const targetFollowers = targetUser.followers || [];
+            const currentFollowing = currentUser.following || [];
+            if (!targetFollowers.some((id) => id.toString() === currentUserId)) {
+              targetFollowers.push(currentUserId);
+              currentFollowing.push(userId);
+              targetUser.followers = targetFollowers;
+              currentUser.following = currentFollowing;
+              await targetUser.save();
+              await currentUser.save();
+            }
+            return targetUser;
+          },
+
+          unfollowUser: async (_, { userId }, { req }) => {
+            const auth = getUserFromReq(req);
+            const currentUserId = auth.userId;
+            if (!isValidObjectId(userId)) throw new Error("Invalid user ID");
+            const currentUser = await User.findById(currentUserId);
+            const targetUser = await User.findById(userId);
+            if (!currentUser) throw new Error("Current user not found");
+            if (!targetUser) throw new Error("User not found");
+            targetUser.followers = (targetUser.followers || []).filter((id) => id.toString() !== currentUserId);
+            currentUser.following = (currentUser.following || []).filter((id) => id.toString() !== userId);
+            await targetUser.save();
+            await currentUser.save();
+            return targetUser;
+          },
     },
     User: {
         posts: async (parent) => {
@@ -328,7 +366,23 @@ const resolvers = {
             } catch {
                 return [];
             }
-        }
+        },
+        followers: async (parent) => {
+            const ids = parent?.followers;
+            if (!ids || !Array.isArray(ids) || ids.length === 0) return [];
+            const userIds = ids.map((id) => (id != null ? String(id) : "")).filter(isValidObjectId);
+            if (userIds.length === 0) return [];
+            return User.find({ _id: { $in: userIds } });
+        },
+        following: async (parent) => {
+            const ids = parent?.following;
+            if (!ids || !Array.isArray(ids) || ids.length === 0) return [];
+            const userIds = ids.map((id) => (id != null ? String(id) : "")).filter(isValidObjectId);
+            if (userIds.length === 0) return [];
+            return User.find({ _id: { $in: userIds } });
+        },
+        followersCount: (parent) => (parent?.followers && Array.isArray(parent.followers) ? parent.followers.length : 0),
+        followingCount: (parent) => (parent?.following && Array.isArray(parent.following) ? parent.following.length : 0),
     },
     Post: {
         author: async (parent) => {

@@ -1,10 +1,14 @@
+import { Link } from 'react-router-dom'
+
 /**
  * Displays a user's avatar (circular) next to their name.
- * Fallback: initials when no avatar URL.
+ * When author has an id, name/avatar link to that author's posts page.
+ * Use with author row outside any parent Link (e.g. on Home) so there is no <a> inside <a>.
  */
-export default function PostAuthor({ author, size = 'md', className = '' }) {
+export default function PostAuthor({ author, size = 'md', className = '', linkToAuthor = true }) {
   const name = author?.name ?? 'Unknown'
   const avatarUrl = author?.avatar ?? null
+  const authorId = author?.id ?? null
   const initials = name
     .split(/\s+/)
     .map((s) => s[0])
@@ -19,8 +23,8 @@ export default function PostAuthor({ author, size = 'md', className = '' }) {
   }
   const s = sizeClasses[size] ?? sizeClasses.md
 
-  return (
-    <span className={`inline-flex items-center gap-2 ${className}`}>
+  const content = (
+    <>
       <span
         className={`flex shrink-0 items-center justify-center rounded-full bg-surface-200 text-surface-600 font-medium overflow-hidden ${s}`}
         aria-hidden
@@ -36,6 +40,21 @@ export default function PostAuthor({ author, size = 'md', className = '' }) {
         )}
       </span>
       <span className="text-surface-500 font-medium">{name}</span>
-    </span>
+    </>
   )
+
+  const wrapperClass = `inline-flex items-center gap-2 ${className}`
+
+  if (linkToAuthor && authorId) {
+    return (
+      <Link
+        to={`/author/${authorId}`}
+        className={`${wrapperClass} hover:text-accent-500 hover:underline underline-offset-2`}
+      >
+        {content}
+      </Link>
+    )
+  }
+
+  return <span className={wrapperClass}>{content}</span>
 }
