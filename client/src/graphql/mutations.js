@@ -143,3 +143,15 @@ export const UNFOLLOW_USER = gql`
     }
   }
 `
+
+export const UPDATE_USER = gql`
+  mutation UpdateUser($id: ID!, $name: String, $avatar: String, $bio: String) {
+    updateUser(id: $id, name: $name, avatar: $avatar, bio: $bio) {
+      id
+      name
+      email
+      avatar
+      bio
+    }
+  }
+`

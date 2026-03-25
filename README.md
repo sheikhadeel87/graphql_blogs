@@ -49,7 +49,7 @@ Add your own screenshots to the `screenshots/` folder, then they will appear bel
 
 | Home | Post page |
 |------|-----------|
-| ![Home](screenshots/home.png) | ![Post](screenshots/post.png) |
+| ![Home](screenshots/latest-posts.png) | ![Post](screenshots/post-page.png) |
 
 | Dashboard | Login |
 |-----------|-------|

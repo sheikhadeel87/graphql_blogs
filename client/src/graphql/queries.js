@@ -70,7 +70,22 @@ export const GET_USER = gql`
       id
       name
       avatar
+      bio
       followers { id }
+      followersCount
+      followingCount
+    }
+  }
+`
+
+export const GET_NOTIFICATIONS = gql`
+  query GetNotifications($limit: Int) {
+    notifications(limit: $limit) {
+      id
+      type
+      createdAt
+      actor { id name avatar }
+      post { id title slug }
     }
   }
 `

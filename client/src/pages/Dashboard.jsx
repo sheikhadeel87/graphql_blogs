@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { useQuery, useMutation } from '@apollo/client'
-import { GET_POSTS } from '../graphql/queries'
-import { CREATE_POST, UPDATE_POST, DELETE_POST, ENHANCE_WITH_AI } from '../graphql/mutations'
+import { GET_POSTS, GET_USER } from '../graphql/queries'
+import { CREATE_POST, UPDATE_POST, DELETE_POST, ENHANCE_WITH_AI, UPDATE_USER } from '../graphql/mutations'
 import { useAuth } from '../context/AuthContext'
 import { formatPostDateShort } from '../lib/dateUtils'
 import { uploadImage } from '../lib/uploadImage'
@@ -14,18 +14,33 @@ export default function Dashboard() {
   const navigate = useNavigate()
   const { user, isLoggedIn } = useAuth()
   const fileRef = useRef(null)
+  const profileAvatarRef = useRef(null)
   const [editingId, setEditingId] = useState(null)
   const [showForm, setShowForm] = useState(false)
   const [form, setForm] = useState({ title: '', content: '', coverImage: '', tags: '', status: 'published', slug: '' })
   const [uploading, setUploading] = useState(false)
   const [uploadError, setUploadError] = useState(null)
   const [editorKey, setEditorKey] = useState(0)
+  const [showProfileEdit, setShowProfileEdit] = useState(false)
+  const [profileForm, setProfileForm] = useState({ bio: '', avatar: '' })
+  const [profileUploading, setProfileUploading] = useState(false)
+  const [profileUploadError, setProfileUploadError] = useState(null)
 
 
   const { data, loading, refetch } = useQuery(GET_POSTS, {
     variables: { page: 1, limit: 100 },
   })
+  const { data: userData, refetch: refetchUser } = useQuery(GET_USER, {
+    variables: { id: user?.id },
+    skip: !user?.id,
+  })
+  const profile = userData?.user
   const [createPost] = useMutation(CREATE_POST, { onCompleted: resetAndRefetch })
+  const [updateUser] = useMutation(UPDATE_USER, {
+    refetchQueries: [{ query: GET_USER, variables: { id: user?.id } }],
+    onCompleted: () => { setShowProfileEdit(false); refetchUser(); },
+    onError: (err) => alert(err.message || 'Failed to update profile'),
+  })
   const [updatePost] = useMutation(UPDATE_POST, { onCompleted: () => { setEditingId(null); resetAndRefetch() } })
   const [deletePost] = useMutation(DELETE_POST, { onCompleted: refetch })
   const [enhanceWithAI, { loading: enhancing }] = useMutation(ENHANCE_WITH_AI, {
@@ -42,6 +57,43 @@ function resetAndRefetch() {
 useEffect(() => {
   if (!isLoggedIn) navigate('/login')
 }, [isLoggedIn, navigate])
+
+useEffect(() => {
+  if (showProfileEdit && profile) {
+    setProfileForm({ bio: profile.bio ?? '', avatar: profile.avatar ?? '' })
+    setProfileUploadError(null)
+  }
+}, [showProfileEdit, profile])
+
+const setProfileFormField = (key) => (e) => setProfileForm((f) => ({ ...f, [key]: e.target.value }))
+
+const handleProfileAvatarChange = async (e) => {
+  const file = e.target.files?.[0]
+  if (!file) return
+  setProfileUploadError(null)
+  setProfileUploading(true)
+  try {
+    const url = await uploadImage(file)
+    setProfileForm((f) => ({ ...f, avatar: url }))
+  } catch (err) {
+    setProfileUploadError(err.message)
+  } finally {
+    setProfileUploading(false)
+    if (profileAvatarRef.current) profileAvatarRef.current.value = ''
+  }
+}
+
+const handleProfileSubmit = async (e) => {
+  e.preventDefault()
+  if (!user?.id) return
+  const bio = profileForm.bio.trim() || null
+  const avatar = profileForm.avatar.trim() || null
+  try {
+    await updateUser({ variables: { id: user.id, bio, avatar } })
+  } catch (_) {
+    // onError shows alert
+  }
+}
 
 const myPosts = (data?.posts?.posts ?? []).filter((p) => p.author?.id === user?.id)
 const set = (key) => (e) => setForm((f) => ({ ...f, [key]: e.target.value }))
@@ -131,12 +183,112 @@ const isFormOpen = showForm || editingId
 return (
   <div className="animate-fade-in">
     <header className="mb-8">
-      <h1 className="heading-display text-3xl text-surface-900">Dashboard</h1>
+      <h1 className="heading-display text-3xl text-surface-900">{user?.name ? `${user.name}'s Dashboard` : 'My Dashboard'}</h1>
       <p className="mt-2 text-surface-500">Create and manage your posts.</p>
     </header>
 
+    <section className="card p-6 sm:p-8 mb-8">
+      <div className="flex flex-col sm:flex-row sm:items-start gap-6">
+        <div className="shrink-0">
+          {profile?.avatar ? (
+            <img
+              src={profile.avatar}
+              alt=""
+              className="w-24 h-24 rounded-full object-cover border-2 border-surface-200"
+            />
+          ) : (
+            <div
+              className="w-24 h-24 rounded-full bg-surface-200 flex items-center justify-center text-2xl font-semibold text-surface-600 border-2 border-surface-200"
+              aria-hidden
+            >
+              {(user?.name ?? 'U').split(/\s+/).map((s) => s[0]).join('').toUpperCase().slice(0, 2)}
+            </div>
+          )}
+        </div>
+        <div className="min-w-0 flex-1">
+          <h2 className="font-display text-xl font-semibold text-surface-900">{user?.name ?? 'User'}</h2>
+          {profile?.bio ? (
+            <p className="mt-2 text-surface-600 text-[15px] leading-relaxed whitespace-pre-wrap">{profile.bio}</p>
+          ) : (
+            <p className="mt-2 text-surface-400 text-sm italic">No bio yet.</p>
+          )}
+          <div className="mt-4 flex flex-wrap items-center gap-6 text-sm">
+            <span className="font-medium text-surface-700">
+              <strong className="text-surface-900">{myPosts.length}</strong> post{myPosts.length !== 1 ? 's' : ''}
+            </span>
+            <span className="font-medium text-surface-700">
+              <strong className="text-surface-900">{profile?.followersCount ?? 0}</strong> follower{(profile?.followersCount ?? 0) !== 1 ? 's' : ''}
+            </span>
+            <span className="font-medium text-surface-700">
+              <strong className="text-surface-900">{profile?.followingCount ?? 0}</strong> following
+            </span>
+            <button
+              type="button"
+              onClick={() => setShowProfileEdit(true)}
+              className="btn-secondary text-sm"
+            >
+              Edit profile
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    {showProfileEdit && (
+      <div className="card mb-8 p-6 sm:p-8">
+        <h2 className="font-display text-lg font-semibold text-surface-900 mb-5">Edit profile</h2>
+        <form onSubmit={handleProfileSubmit} className="space-y-5">
+          <FormField label="Bio" optional>
+            <textarea
+              value={profileForm.bio}
+              onChange={setProfileFormField('bio')}
+              placeholder="A short bio about you..."
+              rows={4}
+              className="input-field resize-none"
+            />
+          </FormField>
+          <FormField label="Avatar" optional error={profileUploadError}>
+            <div className="space-y-2">
+              <div className="flex flex-wrap items-center gap-3">
+                <input
+                  ref={profileAvatarRef}
+                  type="file"
+                  accept="image/jpeg,image/png,image/gif,image/webp"
+                  onChange={handleProfileAvatarChange}
+                  disabled={profileUploading}
+                  className="block max-w-xs text-sm text-surface-600 file:mr-3 file:rounded-lg file:border-0 file:bg-accent-500 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-white file:hover:bg-accent-600"
+                />
+                {profileUploading && <span className="text-sm text-surface-500">Uploading…</span>}
+              </div>
+              <input
+                value={profileForm.avatar}
+                onChange={setProfileFormField('avatar')}
+                placeholder="Or paste avatar image URL"
+                className="input-field"
+              />
+              {profileForm.avatar && (
+                <div className="mt-2">
+                  <img src={profileForm.avatar} alt="" className="h-20 w-20 rounded-full object-cover border border-surface-200" />
+                </div>
+              )}
+            </div>
+          </FormField>
+          <div className="flex gap-3">
+            <button type="submit" className="btn-primary">Save profile</button>
+            <button type="button" onClick={() => { setShowProfileEdit(false); setProfileUploadError(null) }} className="btn-secondary">Cancel</button>
+          </div>
+        </form>
+      </div>
+    )}
+
     {!isFormOpen && (
-      <button onClick={() => setShowForm(true)} className="btn-primary mb-8">New post</button>
+      <button onClick={() => setShowForm(true)} className="btn-primary mb-8 inline-flex items-center gap-2">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="shrink-0">
+          <line x1="12" y1="5" x2="12" y2="19" />
+          <line x1="5" y1="12" x2="19" y2="12" />
+        </svg>
+        New post
+      </button>
     )}
 
     {isFormOpen && (
