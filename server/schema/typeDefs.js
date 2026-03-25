@@ -4,6 +4,7 @@ type User {
   name: String!
   email: String!
   avatar: String
+  bio: String
   posts: [Post]
   followers: [User]
   following: [User]
@@ -41,6 +42,16 @@ type Comment {
   createdAt: String
 }
 
+type Notification {
+  id: ID!
+  type: String!
+  actor: User
+  recipient: User
+  post: Post
+  comment: Comment
+  createdAt: String
+}
+
 input PostFilterInput {
   title: String
   authorName: String
@@ -60,6 +71,7 @@ type Query {
   postBySlug(slug: String!): Post
   comments: [Comment]
   comment(id: ID!): Comment
+  notifications(limit: Int): [Notification]
 }
 
 type Mutation {
@@ -72,7 +84,7 @@ type Mutation {
   deletePost(id: ID!): Boolean
   updateComment(id: ID!, text: String!): Comment
   deleteComment(id: ID!): Boolean
-  updateUser(id: ID!, name: String, email: String, password: String, avatar: String): User
+  updateUser(id: ID!, name: String, email: String, password: String, avatar: String, bio: String): User
   deleteUser(id: ID!): Boolean
   singleUpload(file: Upload!): String
   likePost(postId: ID!): Post

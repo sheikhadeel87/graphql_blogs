@@ -3,6 +3,7 @@ const OpenAI = require("openai").default;
 const User = require("../models/User");
 const Post = require("../models/Post");
 const Comment = require("../models/Comment");
+const Notification = require("../models/Notification");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const fs = require("fs");
@@ -179,7 +180,15 @@ const resolvers = {
             }
         },
         comments: async () => await Comment.find(),
-        comment: async (_, { id }) => await findCommentById(id)
+        comment: async (_, { id }) => await findCommentById(id),
+        notifications: async (_, { limit = 20 }, { req }) => {
+            const user = getUserFromReq(req);
+            const cap = Math.min(Math.max(limit || 20, 1), 100);
+            return Notification.find({ recipient: user.userId })
+                .sort({ createdAt: -1 })
+                .limit(cap)
+                .lean();
+        },
     },
     Mutation: {
         createUser: async (_, { name, email }) => {
@@ -220,8 +229,20 @@ const resolvers = {
             return await post.save();
         },
         createComment: async (_, { text, postId, userId }) => {
+            const post = await findPostById(postId);
+            if (!post) throw new Error("Post not found");
             const comment = new Comment({ text, postId, userId });
-            return await comment.save();
+            await comment.save();
+            if (userId && post.author && post.author.toString() !== userId) {
+                await Notification.create({
+                    type: "comment",
+                    actor: userId,
+                    recipient: post.author,
+                    post: postId,
+                    comment: comment._id,
+                });
+            }
+            return comment;
         },
         updatePost: async (_, { id, title, content, coverImage, tags, status, publishedAt, slug }, { req }) => {
             const user = getUserFromReq(req);
@@ -264,7 +285,7 @@ const resolvers = {
             await comment.deleteOne();
             return true;
         },
-        updateUser: async (_, { id, name, email, password, avatar }, { req }) => {
+        updateUser: async (_, { id, name, email, password, avatar, bio }, { req }) => {
             const user = getUserFromReq(req);
             if (!isValidObjectId(id) || user.userId !== id) throw new Error("Not authorized");
             const update = {};
@@ -274,6 +295,7 @@ const resolvers = {
                 update.password = await bcrypt.hash(password, 10);
             }
             if (avatar !== undefined) update.avatar = avatar || null;
+            if (bio !== undefined) update.bio = bio ?? null;
             const updatedUser = await User.findByIdAndUpdate(id, update, { new: true });
             if (!updatedUser) throw new Error("User not found");
             return updatedUser;
@@ -299,6 +321,14 @@ const resolvers = {
               post.likedBy.push(user.userId);
               post.likes = post.likedBy.length;
               await post.save();
+              if (post.author && post.author.toString() !== user.userId) {
+                await Notification.create({
+                  type: "like",
+                  actor: user.userId,
+                  recipient: post.author,
+                  post: post._id,
+                });
+              }
             }
 
             return post;
@@ -339,6 +369,11 @@ const resolvers = {
               currentUser.following = currentFollowing;
               await targetUser.save();
               await currentUser.save();
+              await Notification.create({
+                type: "follow",
+                actor: currentUserId,
+                recipient: userId,
+              });
             }
             return targetUser;
           },
@@ -424,6 +459,14 @@ const resolvers = {
             }
         },
         post: async (parent) => (parent?.postId ? await findPostById(parent.postId) : null),
+        createdAt: (parent) => parent.createdAt instanceof Date ? parent.createdAt.toISOString() : parent.createdAt ?? null
+    },
+    Notification: {
+        id: (parent) => parent._id?.toString() ?? parent.id,
+        actor: async (parent) => (parent?.actor ? await findUserById(parent.actor) : null),
+        recipient: async (parent) => (parent?.recipient ? await findUserById(parent.recipient) : null),
+        post: async (parent) => (parent?.post ? await findPostById(parent.post) : null),
+        comment: async (parent) => (parent?.comment ? await findCommentById(parent.comment) : null),
         createdAt: (parent) => parent.createdAt instanceof Date ? parent.createdAt.toISOString() : parent.createdAt ?? null
     }
 };
