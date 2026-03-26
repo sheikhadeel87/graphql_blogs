@@ -1,3 +1,8 @@
+export const MARK_ALL_NOTIFICATIONS_READ = gql`
+  mutation MarkAllAsRead {
+    markAllAsRead
+  }
+`
 import { gql } from '@apollo/client'
 
 export const REGISTER = gql`

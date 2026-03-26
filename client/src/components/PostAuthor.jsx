@@ -26,7 +26,7 @@ export default function PostAuthor({ author, size = 'md', className = '', linkTo
   const content = (
     <>
       <span
-        className={`flex shrink-0 items-center justify-center rounded-full bg-surface-200 text-surface-600 font-medium overflow-hidden ${s}`}
+        className={`flex shrink-0 items-center justify-center rounded-full bg-surface-200 dark:bg-surface-600 text-surface-600 dark:text-surface-100 font-medium overflow-hidden ${s}`}
         aria-hidden
       >
         {avatarUrl ? (
