@@ -1,13 +1,41 @@
+      .dark .text-surface-900 {
+        --tw-text-opacity: 1;
+        color: rgb(245 245 245 / var(--tw-text-opacity, 1));
+      }
+    span {
+      @apply text-surface-900;
+    }
+    .dark span {
+      @apply text-surface-100;
+    }
+  p {
+    @apply text-surface-900;
+  }
+  .dark p {
+    @apply text-surface-100;
+  }
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
   body {
-    @apply bg-surface-50 text-surface-900 antialiased font-sans;
+    @apply bg-surface-100 text-surface-900 antialiased font-sans;
+  }
+  .dark body {
+    @apply bg-surface-900 text-surface-100;
+  }
+  h1, h2, h3, h4, h5, h6 {
+    @apply text-surface-900;
+  }
+  .dark h1, .dark h2, .dark h3, .dark h4, .dark h5, .dark h6 {
+    @apply text-white;
   }
   a {
-    @apply transition-colors duration-200;
+    @apply text-surface-900 transition-colors duration-200;
+  }
+  .dark a {
+    @apply text-surface-100;
   }
   button {
     @apply transition-all duration-200;
@@ -24,13 +52,90 @@
   .input-field {
     @apply w-full rounded-2xl border border-surface-200/80 bg-white px-4 py-3.5 text-surface-900 placeholder-surface-400 focus:outline-none focus:ring-2 focus:ring-accent-500/20 focus:border-accent-500 transition-all duration-200;
   }
+  .dark .input-field {
+    @apply bg-surface-700 border-surface-600 text-surface-100 placeholder-surface-400;
+  }
   .card {
     @apply bg-white shadow-card border border-surface-100/80 overflow-hidden;
+  }
+  .dark .card {
+    @apply bg-surface-800 border-surface-700;
   }
   .card-hover {
     @apply card hover:shadow-card-hover hover:border-surface-200/80 transition-all duration-300;
   }
   .heading-display {
     @apply font-display font-bold tracking-tight;
+  }
+  /* Quill: light mode — white surface, dark text */
+  .rich-text-editor .ql-toolbar {
+    @apply bg-white border-surface-200;
+  }
+  .rich-text-editor .ql-toolbar .ql-picker-label,
+  .rich-text-editor .ql-toolbar .ql-picker-label::before {
+    color: #111827 !important;
+  }
+  .rich-text-editor .ql-toolbar .ql-stroke {
+    stroke: #374151;
+  }
+  .rich-text-editor .ql-toolbar .ql-fill {
+    fill: #374151;
+  }
+  .rich-text-editor .ql-toolbar button:hover .ql-stroke,
+  .rich-text-editor .ql-toolbar button.ql-active .ql-stroke {
+    stroke: #111827;
+  }
+  .rich-text-editor .ql-toolbar .ql-picker-options {
+    @apply bg-white border-surface-200;
+  }
+  .rich-text-editor .ql-toolbar .ql-picker-item {
+    color: #111827 !important;
+  }
+  .rich-text-editor .ql-container {
+    @apply bg-white border-surface-200 text-surface-900;
+  }
+  .rich-text-editor .ql-editor,
+  .rich-text-editor .ql-editor p,
+  .rich-text-editor .ql-editor span {
+    color: #111827;
+  }
+  .rich-text-editor .ql-editor.ql-blank::before {
+    color: #9ca3af;
+  }
+
+  /* Quill: dark mode — dark surface, light text */
+  .dark .rich-text-editor .ql-toolbar {
+    @apply bg-surface-800 border-surface-600;
+  }
+  .dark .rich-text-editor .ql-toolbar .ql-picker-label,
+  .dark .rich-text-editor .ql-toolbar .ql-picker-label::before {
+    color: #f4f4f5 !important;
+  }
+  .dark .rich-text-editor .ql-toolbar .ql-stroke {
+    stroke: #d4d4d8;
+  }
+  .dark .rich-text-editor .ql-toolbar .ql-fill {
+    fill: #d4d4d8;
+  }
+  .dark .rich-text-editor .ql-toolbar button:hover .ql-stroke,
+  .dark .rich-text-editor .ql-toolbar button.ql-active .ql-stroke {
+    stroke: #ffffff;
+  }
+  .dark .rich-text-editor .ql-toolbar .ql-picker-options {
+    @apply bg-surface-800 border-surface-600;
+  }
+  .dark .rich-text-editor .ql-toolbar .ql-picker-item {
+    color: #f4f4f5 !important;
+  }
+  .dark .rich-text-editor .ql-container {
+    @apply bg-surface-800 border-surface-600;
+  }
+  .dark .rich-text-editor .ql-editor,
+  .dark .rich-text-editor .ql-editor p,
+  .dark .rich-text-editor .ql-editor span {
+    color: #f4f4f5 !important;
+  }
+  .dark .rich-text-editor .ql-editor.ql-blank::before {
+    color: #a1a1aa !important;
   }
 }

@@ -98,7 +98,7 @@ export default function PostCard({
                     <button
                       type="button"
                       onClick={(e) => onUnfollowClick?.(e, post.author.id)}
-                      className="text-sm font-medium text-surface-600 hover:text-surface-900 underline"
+                      className="text-sm font-medium text-surface-600 dark:text-surface-200 hover:text-surface-900 dark:hover:text-white underline"
                     >
                       Unfollow
                     </button>
@@ -106,7 +106,7 @@ export default function PostCard({
                     <button
                       type="button"
                       onClick={(e) => onFollowClick?.(e, post.author.id)}
-                      className="text-sm font-medium text-accent-600 hover:text-accent-700 underline"
+                      className="text-sm font-medium text-accent-600 dark:text-accent-400 hover:text-accent-700 dark:hover:text-accent-300 underline"
                     >
                       Follow
                     </button>

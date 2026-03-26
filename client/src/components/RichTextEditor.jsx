@@ -38,7 +38,7 @@ export default function RichTextEditor({
         modules={modules}
         formats={formats}
         style={style}
-        className="rounded-xl border border-surface-200 bg-white"
+        className="rounded-xl border border-surface-200 bg-white dark:border-surface-600 dark:bg-surface-800"
       />
     </div>
   )

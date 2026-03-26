@@ -83,6 +83,7 @@ export const GET_NOTIFICATIONS = gql`
     notifications(limit: $limit) {
       id
       type
+      isRead
       createdAt
       actor { id name avatar }
       post { id title slug }

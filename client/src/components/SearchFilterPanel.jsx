@@ -65,8 +65,8 @@ export default function SearchFilterPanel({ filter = {}, onApply }) {
   const chips = activeChips(filter)
 
   return (
-    <aside className=" border border-surface-200/80 bg-white p-5 shadow-card shrink-0 w-full lg:w-72 h-fit sticky  ">
-      <div className="bg-accent-500 text-white text-xs font-bold tracking-wider px-3 py-2 rounded-lg mb-4 -mx-1">
+    <aside className="border border-surface-200/80 dark:border-surface-700 bg-white dark:bg-surface-800 p-5 shadow-card shrink-0 w-full lg:w-72 h-fit sticky">
+      <div className="bg-accent-500 text-white text-xs font-bold tracking-wider px-3 py-2 rounded-lg mb-4 -mx-1 dark:bg-surface-700 dark:text-white">
         SHOW RESULTS BY
       </div>
 

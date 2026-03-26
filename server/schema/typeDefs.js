@@ -49,6 +49,7 @@ type Notification {
   recipient: User
   post: Post
   comment: Comment
+  isRead: Boolean!
   createdAt: String
 }
 
@@ -78,6 +79,7 @@ type Mutation {
   createUser(name: String!, email: String!): User
   createPost(title: String!, content: String!, userId: ID!, coverImage: String, tags: [String], status: String, publishedAt: String, slug: String): Post
   createComment(text: String!, postId: ID!, userId: ID): Comment
+  markAllAsRead: Boolean!
   register(name: String!, email: String!, password: String!): AuthPayload
   login(email: String!, password: String!): AuthPayload
   updatePost(id: ID!, title: String, content: String, coverImage: String, tags: [String], status: String, publishedAt: String, slug: String): Post

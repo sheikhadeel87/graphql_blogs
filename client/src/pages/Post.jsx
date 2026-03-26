@@ -120,11 +120,11 @@ export default function Post() {
             <>
               <span className="text-surface-300">·</span>
               {isFollowing ? (
-                <button type="button" onClick={handleUnfollow} className="text-sm font-medium text-surface-600 hover:text-surface-900 underline">
+                <button type="button" onClick={handleUnfollow} className="text-sm font-medium text-surface-600 dark:text-surface-200 hover:text-surface-900 dark:hover:text-white underline">
                   Unfollow
                 </button>
               ) : (
-                <button type="button" onClick={handleFollow} className="text-sm font-medium text-accent-600 hover:text-accent-700 underline">
+                <button type="button" onClick={handleFollow} className="text-sm font-medium text-accent-600 dark:text-accent-400 hover:text-accent-700 dark:hover:text-accent-300 underline">
                   Follow
                 </button>
               )}
@@ -186,18 +186,18 @@ export default function Post() {
         {isLoggedIn && (
           <form onSubmit={handleSubmitComment} className="mt-6">
             <div className="relative" ref={emojiPickerRef}>
-              <div className="relative rounded-xl border border-surface-200 bg-white shadow-sm focus-within:border-accent-400 focus-within:ring-1 focus-within:ring-accent-500/30">
+              <div className="relative rounded-xl border border-surface-200 dark:border-surface-600 bg-white dark:bg-surface-800 shadow-sm focus-within:border-accent-400 focus-within:ring-1 focus-within:ring-accent-500/30">
                 <textarea
                   value={commentText}
                   onChange={(e) => setCommentText(e.target.value)}
                   placeholder="Write a comment..."
                   rows={3}
-                  className="block w-full resize-none rounded-xl border-0 bg-transparent py-3 pl-4 pr-12 text-surface-900 placeholder:text-surface-400 focus:outline-none focus:ring-0"
+                  className="block w-full resize-none rounded-xl border-0 bg-transparent py-3 pl-4 pr-12 text-surface-900 dark:text-surface-100 placeholder:text-surface-400 dark:placeholder:text-surface-400 focus:outline-none focus:ring-0"
                 />
                 <button
                   type="button"
                   onClick={() => setShowEmojiPicker((open) => !open)}
-                  className="absolute right-2 bottom-2 rounded-lg p-1.5 text-surface-400 bg-[aliceblue] hover:bg-surface-300 hover:text-surface-600 focus:outline-none focus:ring-2 focus:ring-accent-500/30"
+                  className="absolute right-2 bottom-2 rounded-lg p-1.5 text-surface-400 dark:text-surface-300 bg-surface-100 dark:bg-surface-700 hover:bg-surface-300 dark:hover:bg-surface-600 hover:text-surface-600 dark:hover:text-surface-100 focus:outline-none focus:ring-2 focus:ring-accent-500/30"
                   title="Add emoji"
                   aria-label="Add emoji"
                 >

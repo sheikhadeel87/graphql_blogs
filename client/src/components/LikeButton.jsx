@@ -16,8 +16,8 @@ export default function LikeButton({ liked, onClick, count, disabled, className 
         transition-all duration-200 ease-out focus:outline-none focus:ring-2 focus:ring-offset-2
         disabled:opacity-60 disabled:cursor-not-allowed select-none
         ${liked
-          ? 'like-btn--liked bg-[#fce7e8] text-[#c73b3c] hover:bg-[#fad4d6] focus:ring-[#c73b3c]/30'
-          : 'like-btn--default bg-surface-100/80 text-surface-500 hover:bg-surface-200/80 hover:text-surface-700 focus:ring-surface-300/50'
+          ? 'like-btn--liked bg-red-100 text-red-700 hover:bg-red-200 focus:ring-red-500/30 dark:bg-red-900/45 dark:text-red-200 dark:hover:bg-red-800/55'
+          : 'like-btn--default bg-surface-200 text-surface-700 hover:bg-surface-300 hover:text-surface-900 focus:ring-surface-400/50 dark:bg-surface-700 dark:text-surface-100 dark:hover:bg-surface-600'
         }
         ${className}
       `}

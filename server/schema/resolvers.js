@@ -191,6 +191,12 @@ const resolvers = {
         },
     },
     Mutation: {
+            markAllAsRead: async (_, __, { req }) => {
+              const user = getUserFromReq(req);
+              if (!user || !user.userId) throw new Error("Not authenticated");
+              await Notification.updateMany({ recipient: user.userId, isRead: false }, { $set: { isRead: true } });
+              return true;
+            },
         createUser: async (_, { name, email }) => {
             const user = new User({ name, email });
             return await user.save();
@@ -234,13 +240,14 @@ const resolvers = {
             const comment = new Comment({ text, postId, userId });
             await comment.save();
             if (userId && post.author && post.author.toString() !== userId) {
-                await Notification.create({
-                    type: "comment",
-                    actor: userId,
-                    recipient: post.author,
-                    post: postId,
-                    comment: comment._id,
-                });
+              await Notification.create({
+                type: "comment",
+                actor: userId,
+                recipient: post.author,
+                post: postId,
+                comment: comment._id,
+                isRead: false,
+              });
             }
             return comment;
         },
@@ -327,6 +334,7 @@ const resolvers = {
                   actor: user.userId,
                   recipient: post.author,
                   post: post._id,
+                  isRead: false,
                 });
               }
             }
@@ -373,6 +381,7 @@ const resolvers = {
                 type: "follow",
                 actor: currentUserId,
                 recipient: userId,
+                isRead: false,
               });
             }
             return targetUser;
